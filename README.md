@@ -23,4 +23,4 @@ The application will start in Rust mode and show the Mandelbrot fractal. Press _
 Point the mouse at any point and scroll your mouse wheel to zoom into (or out of) the fractal. You can also use __z__ and __x__ for this. Hold the __left__ mouse button and drag the mouse to pan around. Press __j__ and __i__ to decrease or increase the number of iterations. As you zoom in it is necessary to increase the number of iterations. Reset to the initial view by pressing __space__.    
 
 ## Credits
-- OneLoneCoder and his YouTube movies (especially the about fractals).
+- OneLoneCoder and his YouTube movies (especially the one about fractals).
