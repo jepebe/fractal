@@ -1,0 +1,18 @@
+[package]
+name = "fractal"
+version = "0.1.0"
+authors = ["jeanpaul <jepebe@users.noreply.github.com>"]
+edition = "2018"
+
+[lib]
+name = "fractal"
+crate-type = ["cdylib"]
+
+[dependencies]
+num = "0.3.0"
+numpy = "0.12"
+ndarray = "0.13"
+
+[dependencies.pyo3]
+version = "0.12.3"
+features = ["extension-module"]
