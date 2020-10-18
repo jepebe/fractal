@@ -5,7 +5,7 @@ This is a fractal renderer implemented in Python using the pixel fiddling tools 
 ![Screenshot of a fractal](images/fractal.png)
 
 ## Building
-Rust needs to be installed and a fairly new version of Python 3.
+Rust needs to be installed and a fairly new version of Python 3. Clone the repository and run the follow commands.
 
 ```
 pip install pxng
