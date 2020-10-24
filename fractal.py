@@ -2,11 +2,12 @@ import time
 import numpy as np
 
 import pxng
-from pxng.keys import KEY_SPACE, KEY_1, KEY_2
-from pxng.keys import KEY_Q, KEY_Z, KEY_X, KEY_J, KEY_I
+from pxng.keys import *
 
 from fractal import Range2D
 from fractal import py_create_fractal
+from fractal.shader_fractal import ShaderFractal
+from fractal.term_fractal import term_fractal
 from fractal._fractal import create_fractal as rust_create_fractal
 
 
@@ -31,12 +32,25 @@ def handle_input(window, context):
         window.close_window()
 
     if window.key_state(KEY_1).pressed:
-        context['method'] = 1
+        context['method'] = 'Rust'
         context['dirty'] = True
 
     if window.key_state(KEY_2).pressed:
-        context['method'] = 2
+        context['method'] = 'Python'
         context['dirty'] = True
+
+    if window.key_state(KEY_3).pressed:
+        context['method'] = 'Shader'
+        context['dirty'] = True
+
+    if window.key_state(KEY_T).pressed:
+        iterations = context['iterations']
+        frac = calculate_world_view(window)
+        term_fractal(iterations=iterations, fra=frac)
+
+    if window.key_state(KEY_F).pressed:
+        frac = calculate_world_view(window)
+        print(f'dx={frac[2] - frac[0]} dy={frac[3] - frac[1]}')
 
     if window.key_state(KEY_I).pressed:
         iterations = context['iterations']
@@ -68,20 +82,26 @@ def update(window: pxng.Window):
     if window.context['dirty']:
         render_fractal(window)
 
-    sprite = window.context['sprite']
-    window.draw_sprite(0, 0, sprite, scale=1)
+    if window.context['method'] == 'Shader':
+        now = time.time()
+        # Since we are not rendering to texture we need to draw every frame
+        iterations = window.context['iterations']
+        frac = calculate_world_view(window)
+        pix = Range2D(0, 0, w, h)
+        sf: ShaderFractal = window.context['shaderfractal']
+        sf.create_fractal(window._spaces, pix, frac, iterations=iterations)
+
+        window.context['rendering_time'] = time.time() - now
+    else:
+        sprite = window.context['sprite']
+        window.draw_sprite(0, 0, sprite, scale=1)
 
     window.draw_text(0, 0, 'Fractal Renderer', scale=2)
     rendering_time = window.context["rendering_time"]
     iterations = window.context["iterations"]
     window.draw_text(0, 18, f'Iterations: {iterations}')
     window.draw_text(0, 28, f'Time Taken: {rendering_time :.04f} s.')
-    if window.context['method'] == 1:
-        method = 'Rust'
-    elif window.context['method'] == 2:
-        method = 'Python'
-    else:
-        method = 'Unknown'
+    method = window.context['method']
     window.draw_text(0, 36, f'Method: {method}')
 
 
@@ -128,8 +148,22 @@ class WorldSpace:
 def render_fractal(window: pxng.Window):
     iterations = window.context['iterations']
     sprite = window.context['sprite']
-    world: WorldSpace = window.context['world']
+    frac = calculate_world_view(window)
 
+    now = time.time()
+    pix = Range2D(0, 0, w, h)
+    if window.context['method'] == 'Rust':
+        rust_create_fractal(pix, frac, iterations=iterations, data=sprite._data)
+        sprite.update()
+    elif window.context['method'] == 'Python':
+        py_create_fractal(pix, frac, iterations=iterations, data=sprite)
+
+    window.context['rendering_time'] = time.time() - now
+    window.context['dirty'] = False
+
+
+def calculate_world_view(window: pxng.Window):
+    world: WorldSpace = window.context['world']
     if window.context['panning']:
         dx, dy = window.context['mouse_delta']
         dx, dy = world.screen_to_world_units(dx, dy)
@@ -143,19 +177,7 @@ def render_fractal(window: pxng.Window):
 
     fx1, fy1 = world.screen_to_world(0, 0)
     fx2, fy2 = world.screen_to_world(window.width, window.height)
-
-    frac = Range2D(fx1, fy1, fx2, fy2)
-
-    now = time.time()
-    pix = Range2D(0, 0, w, h)
-    if window.context['method'] == 1:
-        rust_create_fractal(pix, frac, iterations=iterations, data=sprite._data)
-        sprite.update()
-    elif window.context['method'] == 2:
-        py_create_fractal(pix, frac, iterations=iterations, data=sprite)
-
-    window.context['rendering_time'] = time.time() - now
-    window.context['dirty'] = False
+    return Range2D(fx1, fy1, fx2, fy2)
 
 
 if __name__ == "__main__":
@@ -170,11 +192,12 @@ if __name__ == "__main__":
         'dirty': True,
         'iterations': 128,
         'rendering_time': 0,
-        'method': 1,  # 1 = rust, 2 = python
+        'method': 'Shader',  # Options: Rust, Python, Shader
         'world': WorldSpace(0, 0, w, h, -2, -1, 1, 1),
         'panning': False,
         'mouse': (0, 0),
         'mouse_delta': (0, 0),
+        'shaderfractal': ShaderFractal()
     }
     render_fractal(window)
     window.set_update_handler(update)

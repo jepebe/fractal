@@ -12,16 +12,19 @@ def _colored_char(color, filler="\u2588"):
     return "\x1b[38;2;{r};{g};{b}m{f}\x1b[0m".format(r=r, g=g, b=b, f=filler)
 
 
-def get_term(width, height, iterations):
+def get_term(width, height, iterations, fra=Range2D(-2, 1, 1, -1)):
     pix = Range2D(0, 0, width, height)
-    fra = Range2D(-2, 1, 1, -1)
     data = Terminal()
     py_create_fractal(pix, fra, iterations, data)
     return data
 
 
 def _run(width, height, iterations):
-    data = get_term(width, height, iterations)
+    term_fractal(width, height, iterations=iterations)
+
+
+def term_fractal(width=80, height=50, iterations=128, fra=Range2D(-2, 1, 1, -1)):
+    data = get_term(width, height, iterations, fra)
 
     for row in range(height):
         print("".join(_colored_char(data[(col, row)]) for col in range(width)))
