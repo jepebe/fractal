@@ -1,6 +1,6 @@
 # Fractal
 
-This is a fractal renderer implemented in Python using the pixel fiddling tools provided by `pxng`. The Python solution is extremely slow so a binding to a Rust version of the calculation has been integrated. This improves the rendering time approximately 100 times.
+This is a fractal renderer implemented in Python using the pixel fiddling tools provided by `pxng`. The Python solution is extremely slow so a binding to a Rust version of the calculation has been integrated. This improves the rendering time approximately 100 times. An additional rendering technique is also available, implemented with OpenGL Shaders, this one is at least 20 times faster than the Rust implementation. 
 
 ![Screenshot of a fractal](images/fractal.png)
 
